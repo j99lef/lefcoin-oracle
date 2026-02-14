@@ -1,0 +1,29 @@
+{
+  "name": "lefcoin",
+  "version": "0.1.0",
+  "description": "LefCoin (LEF) — a sentiment-indexed crypto token driven by love and positivity",
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "test": "npx hardhat test",
+    "deploy:local": "npx hardhat run scripts/deploy.js",
+    "deploy:base-sepolia": "npx hardhat run scripts/deploy.js --network baseSepolia",
+    "deploy:sepolia": "npx hardhat run scripts/deploy.js --network sepolia",
+    "deploy:arb-sepolia": "npx hardhat run scripts/deploy.js --network arbitrumSepolia",
+    "oracle": "cd oracle && python sentiment_pipeline.py",
+    "oracle:daemon": "cd oracle && python sentiment_pipeline.py --daemon"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:32807/git/j99lef/AgentCoder"
+  },
+  "keywords": ["erc20", "sentiment", "token", "lefcoin", "love-index"],
+  "license": "MIT",
+  "devDependencies": {
+    "hardhat": "^2.22.0",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.0",
+    "dotenv": "^16.4.0"
+  }
+}

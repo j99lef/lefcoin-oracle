@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LefCoin — LOVE Index Dashboard</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131f;
+      --border: #1e1e2e;
+      --text: #e0e0e0;
+      --text-dim: #888;
+      --accent: #e06090;
+      --accent-glow: rgba(224, 96, 144, 0.3);
+      --green: #50c878;
+      --gold: #f0c040;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .logo span { color: var(--text-dim); font-weight: 400; font-size: 0.9rem; }
+
+    #connectBtn {
+      padding: 0.6rem 1.2rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: box-shadow 0.2s;
+    }
+    #connectBtn:hover { box-shadow: 0 0 20px var(--accent-glow); }
+    #connectBtn.connected { background: var(--green); }
+
+    .dashboard {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    /* ─── LOVE Index Hero ─────────────────────── */
+    .love-index-hero {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 2rem;
+    }
+
+    .love-index-hero h2 {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .love-index-value {
+      font-size: 5rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+      text-shadow: 0 0 40px var(--accent-glow);
+    }
+
+    .love-index-max {
+      font-size: 1.2rem;
+      color: var(--text-dim);
+    }
+
+    .love-bar {
+      width: 80%;
+      max-width: 500px;
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      margin: 1.5rem auto 0;
+      overflow: hidden;
+    }
+
+    .love-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #e06090, #f0c040, #50c878);
+      border-radius: 4px;
+      transition: width 0.8s ease;
+    }
+
+    /* ─── Subindex Grid ───────────────────────── */
+    .subindex-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .subindex-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.2rem;
+    }
+
+    .subindex-card .name {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .subindex-card .score {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0.3rem 0;
+    }
+
+    .subindex-card .weight {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+
+    .subindex-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 0.8rem;
+      overflow: hidden;
+    }
+
+    .subindex-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    /* ─── Action Panels ───────────────────────── */
+    .panels {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    .panel h3 {
+      font-size: 0.85rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { color: var(--text-dim); }
+    .stat-value { color: var(--text); font-weight: 600; }
+    .stat-value.green { color: var(--green); }
+    .stat-value.gold { color: var(--gold); }
+
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 0.6rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.85rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .action-btn {
+      width: 100%;
+      padding: 0.7rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: box-shadow 0.2s;
+    }
+    .action-btn:hover { box-shadow: 0 0 20px var(--accent-glow); }
+    .action-btn:disabled { background: var(--border); cursor: not-allowed; box-shadow: none; }
+
+    .claim-btn { background: var(--green); }
+    .claim-btn:hover { box-shadow: 0 0 20px rgba(80, 200, 120, 0.3); }
+
+    .tx-status {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: 0.5rem;
+      min-height: 1.2rem;
+    }
+    .tx-status.success { color: var(--green); }
+    .tx-status.error { color: #e04040; }
+
+    /* ─── Good Spend Destinations ─────────────── */
+    .destinations-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+
+    .destinations-table th {
+      text-align: left;
+      color: var(--text-dim);
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-weight: 400;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.7rem;
+    }
+
+    .destinations-table td {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-dim);
+      font-size: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 640px) {
+      .love-index-value { font-size: 3.5rem; }
+      .subindex-grid { grid-template-columns: 1fr; }
+      .panels { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">LefCoin <span>LOVE Index Dashboard</span></div>
+  <button id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+</header>
+
+<div class="dashboard">
+
+  <!-- LOVE Index Hero -->
+  <div class="love-index-hero">
+    <h2>Composite LOVE Index</h2>
+    <div class="love-index-value" id="loveIndex">---</div>
+    <div class="love-index-max">/ 1000</div>
+    <div class="love-bar">
+      <div class="love-bar-fill" id="loveBar" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <!-- Subindex Cards -->
+  <div class="subindex-grid" id="subindexGrid"></div>
+
+  <!-- Action Panels -->
+  <div class="panels">
+
+    <!-- Wallet / Holdings -->
+    <div class="panel">
+      <h3>Your Holdings</h3>
+      <div class="stat-row">
+        <span class="stat-label">LEF Balance</span>
+        <span class="stat-value" id="lefBalance">--</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Pending Rewards</span>
+        <span class="stat-value green" id="pendingRewards">--</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Reward Multiplier</span>
+        <span class="stat-value gold" id="rewardMultiplier">--</span>
+      </div>
+      <button class="action-btn claim-btn" id="claimBtn" onclick="claimRewards()" disabled>
+        Claim Rewards
+      </button>
+      <div class="tx-status" id="claimStatus"></div>
+    </div>
+
+    <!-- Transfer -->
+    <div class="panel">
+      <h3>Send LEF</h3>
+      <input type="text" id="sendTo" placeholder="Recipient address (0x...)" />
+      <input type="number" id="sendAmount" placeholder="Amount (LEF)" step="0.01" />
+      <button class="action-btn" id="sendBtn" onclick="sendLef()" disabled>
+        Send
+      </button>
+      <div class="tx-status" id="sendStatus"></div>
+    </div>
+
+    <!-- Token Stats -->
+    <div class="panel">
+      <h3>Token Stats</h3>
+      <div class="stat-row">
+        <span class="stat-label">Total Supply</span>
+        <span class="stat-value" id="totalSupply">--</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Transfer Fee</span>
+        <span class="stat-value" id="transferFee">--</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Good Spend Bonus</span>
+        <span class="stat-value" id="goodSpendBonus">--</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Total Rewards Distributed</span>
+        <span class="stat-value green" id="totalRewards">--</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Good Spend Volume (24h)</span>
+        <span class="stat-value gold" id="goodSpendVolume">--</span>
+      </div>
+    </div>
+
+    <!-- Good Spend Destinations -->
+    <div class="panel">
+      <h3>Good Spend Destinations</h3>
+      <table class="destinations-table">
+        <thead>
+          <tr><th>Name</th><th>Category</th><th>Received</th></tr>
+        </thead>
+        <tbody id="destinationsBody">
+          <tr><td colspan="3" style="color: var(--text-dim)">Connect wallet to view</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  LefCoin (LEF) — Indexed by Love, Driven by Positivity
+</footer>
+
+<script>
+  // ─── CONFIG: Fill these after deployment ────────────────────────
+  const CONFIG = {
+    chainId: 84532,              // Base Sepolia (change for your network)
+    chainName: "Base Sepolia",
+    rpcUrl: "https://sepolia.base.org",
+    lefCoinAddress: "",          // <-- paste after deploy
+    oracleAddress: "",           // <-- paste after deploy
+    registryAddress: "",         // <-- paste after deploy
+  };
+
+  // ─── ABIs (minimal — only the functions we call) ───────────────
+  const LEFCOIN_ABI = [
+    "function balanceOf(address) view returns (uint256)",
+    "function totalSupply() view returns (uint256)",
+    "function transferFeeBps() view returns (uint256)",
+    "function goodSpendBonusBps() view returns (uint256)",
+    "function totalRewardsDistributed() view returns (uint256)",
+    "function goodSpendVolumeWindow() view returns (uint256)",
+    "function viewPendingRewards(address) view returns (uint256)",
+    "function getLoveIndex() view returns (uint256)",
+    "function transfer(address, uint256) returns (bool)",
+    "function claimRewards()",
+    "event Transfer(address indexed from, address indexed to, uint256 value)",
+    "event RewardsClaimed(address indexed holder, uint256 amount)",
+    "event GoodSpendDetected(address indexed from, address indexed to, uint256 amount)",
+  ];
+
+  const ORACLE_ABI = [
+    "function getLoveIndex() view returns (uint256)",
+    "function getSubIndex(uint256) view returns (string, uint256, uint256, uint256)",
+    "function getAllScores() view returns (uint256[6])",
+  ];
+
+  const REGISTRY_ABI = [
+    "function destinationList(uint256) view returns (address)",
+    "function destinations(address) view returns (bool, string, uint8, uint256, uint256)",
+    "function getDestinationCount() view returns (uint256)",
+    "function totalGoodSpendVolume() view returns (uint256)",
+    "function totalGoodTransactions() view returns (uint256)",
+  ];
+
+  // ─── State ─────────────────────────────────────────────────────
+  let provider = null;
+  let signer = null;
+  let userAddress = null;
+  let lefCoin = null;
+  let oracle = null;
+  let registry = null;
+
+  const SUBINDEX_NAMES = [
+    "Global Peace", "Charitable Giving", "Social Sentiment",
+    "Environmental Care", "Community Wellness", "Good Spend"
+  ];
+  const SUBINDEX_COLORS = ["#6090e0", "#e06090", "#9060e0", "#50c878", "#f0c040", "#e06040"];
+  const SUBINDEX_WEIGHTS = [2000, 1500, 2000, 1500, 1500, 1500];
+  const CATEGORIES = [
+    "Charity", "Sustainability", "Education", "Healthcare",
+    "Community", "Disaster Relief", "Animal Welfare", "Arts & Culture", "Other"
+  ];
+
+  // ─── Wallet Connection ─────────────────────────────────────────
+  async function connectWallet() {
+    if (!window.ethereum) {
+      alert("Please install MetaMask or another Web3 wallet.");
+      return;
+    }
+
+    try {
+      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      userAddress = accounts[0];
+
+      provider = new ethers.BrowserProvider(window.ethereum);
+      signer = await provider.getSigner();
+
+      // Check chain
+      const network = await provider.getNetwork();
+      if (Number(network.chainId) !== CONFIG.chainId) {
+        try {
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: "0x" + CONFIG.chainId.toString(16) }],
+          });
+          provider = new ethers.BrowserProvider(window.ethereum);
+          signer = await provider.getSigner();
+        } catch (e) {
+          alert(`Please switch to ${CONFIG.chainName} (chain ID ${CONFIG.chainId})`);
+          return;
+        }
+      }
+
+      // Init contracts
+      if (CONFIG.lefCoinAddress) {
+        lefCoin = new ethers.Contract(CONFIG.lefCoinAddress, LEFCOIN_ABI, signer);
+        oracle = new ethers.Contract(CONFIG.oracleAddress, ORACLE_ABI, provider);
+        registry = new ethers.Contract(CONFIG.registryAddress, REGISTRY_ABI, provider);
+      }
+
+      // Update UI
+      const btn = document.getElementById("connectBtn");
+      btn.textContent = userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
+      btn.classList.add("connected");
+      document.getElementById("claimBtn").disabled = false;
+      document.getElementById("sendBtn").disabled = false;
+
+      await refreshAll();
+    } catch (err) {
+      console.error("Connection failed:", err);
+    }
+  }
+
+  // ─── Data Refresh ──────────────────────────────────────────────
+  async function refreshAll() {
+    if (!oracle) {
+      renderDemoData();
+      return;
+    }
+
+    try {
+      // Parallel fetch
+      const [loveIndex, scores, balance, pending, supply, feeBps, bonusBps, totalRewards, gsVolume] =
+        await Promise.all([
+          oracle.getLoveIndex(),
+          oracle.getAllScores(),
+          lefCoin.balanceOf(userAddress),
+          lefCoin.viewPendingRewards(userAddress),
+          lefCoin.totalSupply(),
+          lefCoin.transferFeeBps(),
+          lefCoin.goodSpendBonusBps(),
+          lefCoin.totalRewardsDistributed(),
+          lefCoin.goodSpendVolumeWindow(),
+        ]);
+
+      renderLoveIndex(Number(loveIndex));
+      renderSubindices(scores.map(Number));
+      renderHoldings(balance, pending, Number(loveIndex));
+      renderStats(supply, Number(feeBps), Number(bonusBps), totalRewards, gsVolume);
+      await renderDestinations();
+    } catch (err) {
+      console.error("Refresh error:", err);
+      renderDemoData();
+    }
+  }
+
+  // ─── Rendering ─────────────────────────────────────────────────
+  function renderLoveIndex(value) {
+    document.getElementById("loveIndex").textContent = value;
+    document.getElementById("loveBar").style.width = (value / 10) + "%";
+  }
+
+  function renderSubindices(scores) {
+    const grid = document.getElementById("subindexGrid");
+    grid.innerHTML = "";
+    for (let i = 0; i < 6; i++) {
+      const pct = scores[i] / 10;
+      const card = document.createElement("div");
+      card.className = "subindex-card";
+      card.innerHTML = `
+        <div class="name">${SUBINDEX_NAMES[i]}</div>
+        <div class="score" style="color: ${SUBINDEX_COLORS[i]}">${scores[i]}</div>
+        <div class="weight">Weight: ${SUBINDEX_WEIGHTS[i] / 100}%</div>
+        <div class="subindex-bar">
+          <div class="subindex-bar-fill" style="width: ${pct}%; background: ${SUBINDEX_COLORS[i]}"></div>
+        </div>
+      `;
+      grid.appendChild(card);
+    }
+  }
+
+  function renderHoldings(balance, pending, loveIndex) {
+    const fmt = (v) => Number(ethers.formatEther(v)).toLocaleString(undefined, { maximumFractionDigits: 2 });
+    document.getElementById("lefBalance").textContent = fmt(balance) + " LEF";
+    document.getElementById("pendingRewards").textContent = fmt(pending) + " LEF";
+    document.getElementById("rewardMultiplier").textContent = (loveIndex / 500).toFixed(2) + "x";
+  }
+
+  function renderStats(supply, feeBps, bonusBps, totalRewards, gsVolume) {
+    const fmt = (v) => Number(ethers.formatEther(v)).toLocaleString(undefined, { maximumFractionDigits: 0 });
+    document.getElementById("totalSupply").textContent = fmt(supply) + " LEF";
+    document.getElementById("transferFee").textContent = (feeBps / 100) + "%";
+    document.getElementById("goodSpendBonus").textContent = "+" + (bonusBps / 100) + "%";
+    document.getElementById("totalRewards").textContent = fmt(totalRewards) + " LEF";
+    document.getElementById("goodSpendVolume").textContent = fmt(gsVolume) + " LEF";
+  }
+
+  async function renderDestinations() {
+    try {
+      const count = Number(await registry.getDestinationCount());
+      const tbody = document.getElementById("destinationsBody");
+      if (count === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="color: var(--text-dim)">No destinations registered yet</td></tr>';
+        return;
+      }
+      tbody.innerHTML = "";
+      for (let i = 0; i < count && i < 20; i++) {
+        const addr = await registry.destinationList(i);
+        const [registered, name, category, totalReceived] = await registry.destinations(addr);
+        if (!registered) continue;
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${name}</td>
+          <td>${CATEGORIES[category] || "Other"}</td>
+          <td>${Number(ethers.formatEther(totalReceived)).toLocaleString(undefined, { maximumFractionDigits: 0 })} LEF</td>
+        `;
+        tbody.appendChild(row);
+      }
+    } catch (err) {
+      console.error("Error loading destinations:", err);
+    }
+  }
+
+  function renderDemoData() {
+    renderLoveIndex(500);
+    renderSubindices([500, 500, 500, 500, 500, 500]);
+    document.getElementById("rewardMultiplier").textContent = "1.00x";
+    document.getElementById("lefBalance").textContent = "Connect wallet";
+    document.getElementById("pendingRewards").textContent = "--";
+    document.getElementById("totalSupply").textContent = "1,000,000,000 LEF";
+    document.getElementById("transferFee").textContent = "1%";
+    document.getElementById("goodSpendBonus").textContent = "+1%";
+    document.getElementById("totalRewards").textContent = "--";
+    document.getElementById("goodSpendVolume").textContent = "--";
+  }
+
+  // ─── Actions ───────────────────────────────────────────────────
+  async function sendLef() {
+    const to = document.getElementById("sendTo").value.trim();
+    const amount = document.getElementById("sendAmount").value;
+    const status = document.getElementById("sendStatus");
+
+    if (!ethers.isAddress(to)) { status.textContent = "Invalid address"; status.className = "tx-status error"; return; }
+    if (!amount || Number(amount) <= 0) { status.textContent = "Invalid amount"; status.className = "tx-status error"; return; }
+
+    try {
+      status.textContent = "Sending...";
+      status.className = "tx-status";
+      const tx = await lefCoin.transfer(to, ethers.parseEther(amount));
+      status.textContent = "Confirming...";
+      await tx.wait();
+      status.textContent = "Sent! Tx: " + tx.hash.slice(0, 14) + "...";
+      status.className = "tx-status success";
+      await refreshAll();
+    } catch (err) {
+      status.textContent = "Failed: " + (err.reason || err.message).slice(0, 50);
+      status.className = "tx-status error";
+    }
+  }
+
+  async function claimRewards() {
+    const status = document.getElementById("claimStatus");
+    try {
+      status.textContent = "Claiming...";
+      status.className = "tx-status";
+      const tx = await lefCoin.claimRewards();
+      status.textContent = "Confirming...";
+      await tx.wait();
+      status.textContent = "Claimed! Tx: " + tx.hash.slice(0, 14) + "...";
+      status.className = "tx-status success";
+      await refreshAll();
+    } catch (err) {
+      status.textContent = "Failed: " + (err.reason || err.message).slice(0, 50);
+      status.className = "tx-status error";
+    }
+  }
+
+  // ─── Init ──────────────────────────────────────────────────────
+  function initSubindexGrid() {
+    renderSubindices([500, 500, 500, 500, 500, 500]);
+    renderLoveIndex(500);
+  }
+
+  // Listen for account/chain changes
+  if (window.ethereum) {
+    window.ethereum.on("accountsChanged", () => location.reload());
+    window.ethereum.on("chainChanged", () => location.reload());
+  }
+
+  initSubindexGrid();
+</script>
+
+<!-- ethers.js v6 from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+
+</body>
+</html>

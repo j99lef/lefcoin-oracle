@@ -1,0 +1,39 @@
+# ─── SECRETS — NEVER COMMIT ─────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# ─── Node / Build ───────────────────────────────────────────────
+node_modules/
+cache/
+artifacts/
+typechain-types/
+coverage/
+coverage.json
+*.log
+.DS_Store
+
+# ─── Python ─────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+*.egg-info/
+
+# ─── IDE ────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ─── OS ─────────────────────────────────────────────────────────
+Thumbs.db
+.DS_Store
