@@ -316,12 +316,11 @@ def fetch_gdelt(query: str, max_results: int = 25) -> SourceResult:
 
 def fetch_reliefweb(query: str, max_results: int = 20) -> SourceResult:
     """ReliefWeb API — UN OCHA humanitarian reports.
-    Note: Requires approved appname since Nov 2025. Falls back gracefully."""
+    Appname approved: lefcoin-love-indexYRHeTSKCveC5KIYjF"""
     resp = requests.post(
-        "https://api.reliefweb.int/v1/reports",
+        "https://api.reliefweb.int/v1/reports?appname=lefcoin-love-indexYRHeTSKCveC5KIYjF",
         headers={"Content-Type": "application/json"},
         json={
-            "appname": "lefcoin-oracle",
             "query": {"value": query},
             "limit": max_results,
             "fields": {"include": ["title"]},
@@ -329,8 +328,8 @@ def fetch_reliefweb(query: str, max_results: int = 20) -> SourceResult:
         },
         timeout=15,
     )
-    if resp.status_code == 403:
-        return SourceResult(name="reliefweb", error="Appname not approved (apply at apidoc.reliefweb.int)")
+    if resp.status_code in (400, 403):
+        return SourceResult(name="reliefweb", error=f"ReliefWeb API error {resp.status_code}")
     data = resp.json()
     reports = data.get("data", [])
     texts = [r["fields"]["title"] for r in reports if r.get("fields", {}).get("title")]
